@@ -1,5 +1,5 @@
 import socket
-import ctypes
+import cement
 
 # Finds the Hue bridge
 def findBridge():
@@ -24,5 +24,6 @@ def findBridge():
 				break
 	except socket.timeout:
 		pass
+	s.close()
 
-findBridge()
+ip = findBridge()
