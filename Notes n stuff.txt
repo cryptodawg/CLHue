@@ -1,6 +1,0 @@
-IP Address: 192.168.50.127
-Debug API: http://192.168.50.127/debug/clip.html
-Username: 8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0
-
-Helpful Stuff:
- - Get lights & info: /api/8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0/lights
