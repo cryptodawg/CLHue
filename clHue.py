@@ -2,32 +2,41 @@ import drest
 import cmd
 import socket
 import json
+import pprint
 
 class clHue(cmd.Cmd):
 	intro = 'Welcome to clHue!'
 	prompt = 'hue> '
 	bridgeIP = None
+	api = None
+	username = '8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0'
+	conf = dict()
+	troubleshooting = True
 
 	def __init__(self):
 		super(clHue, self).__init__()
 		try:
-			confFile = open('clConfig.conf', 'r+')
-			conf = json.load(confFile)
-		except FileNotFoundError:
-			print("Configuration file not found. Creating new configuration file.")
-			confFile = open('clConfig.conf', 'w+')
-			confFile.write('{}')
-			conf = None
-		confFile.close()
+			print("Loading configuration file.")
+			with open('clConfig.conf', 'r') as confFile:
+				self.conf = json.load(confFile)
+				print("Found bridge in configuration file: ", self.conf["bridgeIP"])
+		except (FileNotFoundError, json.decoder.JSONDecodeError):
+			print("Configuration file missing or empty.")
+
 		try:
-			bridgeIP = conf["bridgeIP"]
-		except (KeyError, TypeError):
-			print("Could not find a bridge IP. Searching the network...")
+			self.bridgeIP = self.conf["bridgeIP"]
+		except (KeyError):
+			print("No bridge IP found in configuration file. Searching the network...")
+			# TODO: Prompt the user if this is the bridge we wish to connect to - if yes, have them push the button then go through connection steps to authenticate
 			self.bridgeIP = self.getBridgeIP()
 			if self.bridgeIP is None:
 				print("No bridge found. Exiting.")
-				do_exit()
+				self.do_exit()
+			else:
+				self.conf["bridgeIP"] = self.bridgeIP
 
+				self.writeConfig() # TODO: Ask if we want to write to configuration
+		self.api = drest.API('http://' + self.bridgeIP + '/api/' + self.username)
 	# Gets the bridge's IP address
 	def getBridgeIP(self):
 		msg = \
@@ -54,8 +63,61 @@ class clHue(cmd.Cmd):
 			pass
 		s.close()
 
-	def do_exit():
+	# Returns the response data of a request in an dictionary
+	def responseData(self, arg, mode):
+		arg = arg.replace(' ', '/')
+		response = self.api.make_request(mode, arg)
+		data = json.loads(json.dumps(response.data))
+		if self.troubleshooting:
+			pprint.pprint(data)
+		if len(data) == 1:
+			data = dict(data[0])
+		assert not 'error' in data.keys() ,"Incorrect arguments"
+		return data
+
+
+
+	# Writes the currently loaded configuration to the configuration file
+	def writeConfig(self):
+		with open('clConfig.conf', 'w') as confFile:
+			json.dump(self.conf, confFile)
+			confFile.flush()
+			print('Written to configuration file.')
+
+	# Statuses an object
+	# Parameters: arg - arguments separated by a space
+	# Returns: True if object is turned on; False otherwise.
+	def getState(self, arg):
+		return self.responseData(arg, 'GET')['state']['on']
+
+	### THE FOLLOWING ARE THE METHODS THAT ARE RAN IN THE PROMPT ###
+
+	# Exit the program
+	# arg: None
+	def do_exit(self, arg):
+		print("Bye!")
 		exit()
+
+	# Get items on the bridge
+	# arg: Follows pattern defined in Hue API
+	def do_get(self, arg):
+		try:
+			data = self.responseData(arg, 'GET')
+			if not self.troubleshooting:
+				pprint.pprint(data) # If troubleshooting mode is not enabled, this will not print to the console, which defeats the whole purpose of this method
+		except AssertionError:
+				print("Please specify an item to get. Enter 'help get' for more information.")
+
+	# Toggles items on the bridge
+	# arg: Follows pattern defined in Hue API
+	def do_toggle(self, arg):
+		try:
+			if self.getState(arg):
+				print('Light is on, turning off.')
+			else:
+				print('Light is off, turning on.')
+		except AssertionError:
+			print("Please specify an item to toggle. Enter 'help toggle' for more information.")
 
 if __name__ == '__main__':
 	clHue().cmdloop()
