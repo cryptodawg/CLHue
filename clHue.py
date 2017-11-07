@@ -1,4 +1,4 @@
-import drest
+from HueAPI import HueAPI
 import cmd
 import socket
 import json
@@ -7,14 +7,13 @@ import pprint
 class clHue(cmd.Cmd):
 	intro = 'Welcome to clHue!'
 	prompt = 'hue> '
-	bridgeIP = None
-	api = None
-	username = '8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0'
-	conf = dict()
-	troubleshooting = True
+	username = '8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0' # TODO: Programatically get this
 
 	def __init__(self):
+		self.conf = dict()
 		super(clHue, self).__init__()
+
+		# TODO: Break this out into a configuration handler
 		try:
 			print("Loading configuration file.")
 			with open('clConfig.conf', 'r') as confFile:
@@ -22,22 +21,22 @@ class clHue(cmd.Cmd):
 				print("Found bridge in configuration file: ", self.conf["bridgeIP"])
 		except (FileNotFoundError, json.decoder.JSONDecodeError):
 			print("Configuration file missing or empty.")
-
 		try:
-			self.bridgeIP = self.conf["bridgeIP"]
+			bridgeIP = self.conf["bridgeIP"]
 		except (KeyError):
 			print("No bridge IP found in configuration file. Searching the network...")
 			# TODO: Prompt the user if this is the bridge we wish to connect to - if yes, have them push the button then go through connection steps to authenticate
-			self.bridgeIP = self.getBridgeIP()
-			if self.bridgeIP is None:
+			bridgeIP = self.getBridgeIP()
+			if bridgeIP is None:
 				print("No bridge found. Exiting.")
 				self.do_exit()
 			else:
-				self.conf["bridgeIP"] = self.bridgeIP
-
+				self.conf["bridgeIP"] = bridgeIP
 				self.writeConfig() # TODO: Ask if we want to write to configuration
-		self.api = drest.API('http://' + self.bridgeIP + '/api/' + self.username)
-	# Gets the bridge's IP address
+		self.api = HueAPI(bridgeIP, self.username)
+
+	# Gets the bridge IP address
+	# TODO: Break this out into a configuration handler
 	def getBridgeIP(self):
 		msg = \
 		    'M-SEARCH * HTTP/1.1\r\n' \
@@ -63,21 +62,8 @@ class clHue(cmd.Cmd):
 			pass
 		s.close()
 
-	# Returns the response data of a request in an dictionary
-	def responseData(self, arg, mode):
-		arg = arg.replace(' ', '/')
-		response = self.api.make_request(mode, arg)
-		data = json.loads(json.dumps(response.data))
-		if self.troubleshooting:
-			pprint.pprint(data)
-		if len(data) == 1:
-			data = dict(data[0])
-		assert not 'error' in data.keys() ,"Incorrect arguments"
-		return data
-
-
-
 	# Writes the currently loaded configuration to the configuration file
+	# TODO: Break this out into the configuration handler
 	def writeConfig(self):
 		with open('clConfig.conf', 'w') as confFile:
 			json.dump(self.conf, confFile)
@@ -87,8 +73,9 @@ class clHue(cmd.Cmd):
 	# Statuses an object
 	# Parameters: arg - arguments separated by a space
 	# Returns: True if object is turned on; False otherwise.
+	# TODO: Break this out into another class
 	def getState(self, arg):
-		return self.responseData(arg, 'GET')['state']['on']
+		return self.api.make_request('GET', arg)['state']['on']
 
 	### THE FOLLOWING ARE THE METHODS THAT ARE RAN IN THE PROMPT ###
 
@@ -100,24 +87,27 @@ class clHue(cmd.Cmd):
 
 	# Get items on the bridge
 	# arg: Follows pattern defined in Hue API
+	# Throws: AssertionError if the Hue raises an error
+	# TODO: Use new class created from getState
 	def do_get(self, arg):
 		try:
-			data = self.responseData(arg, 'GET')
-			if not self.troubleshooting:
-				pprint.pprint(data) # If troubleshooting mode is not enabled, this will not print to the console, which defeats the whole purpose of this method
+			data = self.api.make_request('GET', arg)
+			pprint.pprint(data)
 		except AssertionError:
-				print("Please specify an item to get. Enter 'help get' for more information.")
+			print("Incorrect syntax. Enter 'help get' for more information.")
 
 	# Toggles items on the bridge
 	# arg: Follows pattern defined in Hue API
+	# TODO: Use new class created from getState
 	def do_toggle(self, arg):
 		try:
-			if self.getState(arg):
+			currState = api.make_request('GET', arg)['state']['on']
+			if currState:
 				print('Light is on, turning off.')
 			else:
 				print('Light is off, turning on.')
 		except AssertionError:
-			print("Please specify an item to toggle. Enter 'help toggle' for more information.")
+			print("Incorrect syntax. Enter 'help toggle' for more information.")
 
 if __name__ == '__main__':
 	clHue().cmdloop()
