@@ -22,7 +22,7 @@ class RequestHandler(drest.request.RequestHandler):
         data = json.loads(json.dumps(response.data))
         if len(data) == 1:
             data = dict(data[0])
-        assert not 'error' in data.keys() ,"Incorrect arguments"
+        #assert not 'error' in data.keys() ,"Incorrect arguments"
         return data
 
     # Makes the request
