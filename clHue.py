@@ -17,10 +17,13 @@ class clHue(cmd.Cmd):
 		exit()
 
 	def do_get(self, arg):
-		print(self.api.get(arg))
+		pprint(self.api.get(arg))
 
 	def do_toggle(self, arg):
 		self.api.toggle(arg)
+
+	def do_on(self, arg):
+		print(self.api.power(arg, True))
 
 if __name__ == '__main__':
 	clHue().cmdloop()

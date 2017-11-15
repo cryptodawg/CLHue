@@ -14,18 +14,33 @@ class HueInteract():
     # Parameters: arg - arguments separated by a space
     # Returns: True if object is turned on; False otherwise.
     def getState(self, arg):
-        return self.api.make_request('GET', arg)['state']['on']
+        return self.api.get(arg)['state']['on']
 
     # Get items on the bridge
-    # arg: Follows pattern defined in Hue API
+    # Parameters: arg - arguments separated by a space
     # Returns: A dict of the item
     def get(self, arg):
-        return self.api.make_request('GET', arg)
+        return self.api.get(arg)
+
+    # Changes the state of an item
+    # Parameters: arg - arguments separated by a space
+    #             newState - dictionary containing the new state of the item
+    def putState(self, arg, newState):
+        pass
+        # return self.api.make_request('PUT', arg + ' state', newState)
+
+    # Powers an item on or off
+    # Parameters: arg - arguments separated by a space
+    #             on - boolean indicating if we want to turn the item on
+    def power(self, arg, on):
+        pass
+        # powerDict = {'on': on}
+        # return self.putState(arg, powerDict)
 
     # Toggles items on the bridge
-    # arg: Follows pattern defined in Hue API
+    # Parameters: arg - arguments separated by a space
     def toggle(self, arg):
-        currState = self.api.make_request('GET', arg)['state']['on']
+        currState = self.getState(arg)
         if currState:
         	print('Light is on, turning off.')
         else:
