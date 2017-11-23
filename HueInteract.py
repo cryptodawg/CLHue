@@ -1,9 +1,8 @@
 from HueAPI import HueAPI
 from ConfigHandler import ConfigHandler
 
-# TODO: Create a hook for error handling
-
 class HueInteract():
+    """ A Python API to interact with the Philips Hue bridge API in a user-friendly way. """
 
     def __init__(self):
         conf = ConfigHandler().load()
@@ -11,38 +10,66 @@ class HueInteract():
         self.api = HueAPI(conf['bridgeIP'], username) # TODO: Change this once we can programatically get the username
         self.appGroups = dict()
 
-    # Get items on the bridge
-    # Parameters: arg - the object to get information on, separated by a space
-    # Returns: API response in JSON format
     def get(self, arg):
+        """ Returns items from the bridge API in JSON format.
+
+        Parameters:
+			arg -- a string in the form of <lights/groups> <id>
+        """
         return self.api.get(arg)
 
-    # Changes the state of an item
-    # Parameters: arg - the object to change state of, separated by a space
-    #             newState - dictionary containing the new state of the item
-    # Returns: API response in JSON format
+    def bridgeName(self):
+        """ Returns the friendly name of the bridge.
+
+        Parameters:
+            arg -- a string in the form of <lights/groups> <id>
+        """
+        configData = self.api.get('config')
+        return configData['name']
+
     def putState(self, arg, newState):
-        if arg == 'all':
+        """ Changes the state of an object on the bridge. Returns the API response in JSON format.
+
+        Parameters:
+			arg -- a string in the form of <lights/groups> <id>
+        """
+        if arg == 'all': # TODO: Is there a cleaner way of handling this? Perhaps break it out into its own method
             arg = 'groups 0'
         if arg[:5] == 'groups':
             return self.api.put(arg + ' action', newState)
         else:
             return self.api.put(arg + ' state', newState)
 
-    # Powers an item on and off
-    # Parameters: arg - the object to change the power state of, separated by a space
-    #             on - True if we want to turn the object on, False if we want to turn it off
-    # Returns: API response in JSON format
+    # TODO: Error handling if we specify this for a bulb that can only handle white
+    def rainbow(self, arg, bri=-1, sat=-1):
+        """ Cycles an item through all hues. Returns the API response in JSON format.
+
+        Parameters:
+			arg -- a string in the form of <lights/groups> <id>
+            bri -- optional, specifies brightness from 1 (dim) to 254 (most bright)
+            sat -- optional, specifies saturation from 0 (white) to 254 (most saturated)
+        """
+        stateDict = {'on': True, 'effect': 'colorloop'}
+        if (sat != -1): # Saturation is defined
+            stateDict['sat'] = sat
+        if (bri != -1): # Brightness is defined
+            stateDict['bri'] = bri
+        return self.putState(arg, stateDict)
+
     def power(self, arg, on):
+        """ Powers an object on or off. Returns the API response in JSON format.
+
+        Parameters:
+			arg -- a string in the form of <lights/groups> <id>
+            on -- a boolean, True if we want to turn the object on and False if we want to turn it off
+        """
         return self.putState(arg, {'on': on})
 
-    # Toggles the power of items on the bridge
-    # Parameters: arg - the object to toggle the power on, separated by a space
-    # Returns: API response in JSON format
     def toggle(self, arg):
+        """ Toggles the power of an object on the bridge from off to on and vice-versa. Returns the API response in JSON format.
+
+        Parameters:
+			arg -- a string in the form of <lights/groups> <id>
+        """
         currState = self.get(arg)['state']['on']
-        if currState:
-            response = self.power(arg, False)
-        else:
-            response = self.power(arg, True)
-        return response
+        return self.power(arg, not currState)

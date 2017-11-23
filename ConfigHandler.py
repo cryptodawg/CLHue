@@ -4,11 +4,14 @@ import socket
 # TODO: Create a logging handler for print statements
 
 class ConfigHandler():
+    """ Handler for clHue configuration. """
+
     def __init__(self):
         self.conf = dict()
 
     def load(self):
-        # Load the configuration file itself
+        """ Load the configuration file (clConfig.conf) and returns the loaded configuration in a dictionary. """
+        # Attempt to load the file
         try:
             print("Loading configuration file.")
             with open('clConfig.conf', 'r') as confFile:
@@ -28,15 +31,14 @@ class ConfigHandler():
             self.writeConfig() # TODO: Ask if we want to write to configuration
         return self.conf
 
-    # Gets the bridge IP address
     def getBridgeIP(self):
+        """ Returns the IP address of a Philips Hue bridge on the network """
         msg = \
             'M-SEARCH * HTTP/1.1\r\n' \
             'ST:upnp:rootdevice\r\n' \
             'MX:2\r\n' \
             'MAN:"ssdp:discover"\r\n' \
             '\r\n'
-
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         s.settimeout(5)
@@ -56,8 +58,8 @@ class ConfigHandler():
             print("No bridge found. Exiting.")
             exit()
 
-    # Writes the currently loaded configuration to the configuration file
     def writeConfig(self):
+        """ Writes the currently loaded configuration to the configuration file. Doesn't return anything. """
         with open('clConfig.conf', 'w') as confFile:
             json.dump(self.conf, confFile)
             confFile.flush()
