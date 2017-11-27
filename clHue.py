@@ -1,4 +1,5 @@
 from HueInteract import HueInteract
+from LightGroup import LightGroup
 import cmd
 from pprint import pprint
 
@@ -10,7 +11,7 @@ class clHue(cmd.Cmd):
 	def __init__(self):
 		super(clHue, self).__init__()
 		self.api = HueInteract()
-		self.prompt = self.api.bridgeName() + '>'
+		self.prompt = self.api.bridgeName() + '> '
 
 	def do_exit(self, arg):
 		""" Exit the program. """
@@ -78,6 +79,16 @@ class clHue(cmd.Cmd):
 			arg -- a string in the form of <lights/groups> <id>
 		"""
 		pprint(self.api.rainbow(arg))
+
+	def do_test(self, arg):
+		""" Lets us test commands in HueInteract """
+		group = LightGroup(self.api, 'all', 'Test1')
+		group.remove(2)
+		print(group)
+		group.add(2)
+		print(group)
+		group.remove('blah')
+		group.add('blah')
 
 if __name__ == '__main__':
 	clHue().cmdloop()

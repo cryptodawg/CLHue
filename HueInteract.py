@@ -8,7 +8,6 @@ class HueInteract():
         conf = ConfigHandler().load()
         username = '8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0' # TODO: Programatically get this - will be done in ConfigHandler
         self.api = HueAPI(conf['bridgeIP'], username) # TODO: Change this once we can programatically get the username
-        self.appGroups = dict()
 
     def get(self, arg):
         """ Returns items from the bridge API in JSON format.
@@ -33,9 +32,7 @@ class HueInteract():
         Parameters:
 			arg -- a string in the form of <lights/groups> <id>
         """
-        if arg == 'all': # TODO: Is there a cleaner way of handling this? Perhaps break it out into its own method
-            arg = 'groups 0'
-        if arg[:5] == 'groups':
+        if arg[:6] == 'groups':
             return self.api.put(arg + ' action', newState)
         else:
             return self.api.put(arg + ' state', newState)
@@ -65,11 +62,19 @@ class HueInteract():
         """
         return self.putState(arg, {'on': on})
 
+    def status(self, arg):
+        response = self.get(arg)
+        try:
+            objectStatus = response['state']['on']
+            return objectStatus
+        except TypeError: # When there's an error on the bridge, there will only be one index ('error') in response
+            return response
+
     def toggle(self, arg):
         """ Toggles the power of an object on the bridge from off to on and vice-versa. Returns the API response in JSON format.
 
         Parameters:
 			arg -- a string in the form of <lights/groups> <id>
         """
-        currState = self.get(arg)['state']['on']
+        currState = status(arg)
         return self.power(arg, not currState)
