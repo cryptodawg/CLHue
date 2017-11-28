@@ -15,7 +15,6 @@ class HueAPI():
         self.session = requests.Session()
 
     def getFullURL(self, apiObject):
-
         """
         Returns the base URL with added parameters.
 

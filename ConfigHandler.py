@@ -1,8 +1,6 @@
 import json
 import socket
 
-# TODO: Create a logging handler for print statements
-
 class ConfigHandler():
     """ Handler for clHue configuration. """
 
@@ -25,10 +23,9 @@ class ConfigHandler():
             print("Found bridge in configuration file: ", bridgeIP)
         except (KeyError):
             print("No bridge IP found in configuration file. Searching the network...")
-			# TODO: Prompt the user if this is the bridge we wish to connect to - if yes, have them push the button then go through connection steps to authenticate
             bridgeIP = self.getBridgeIP()
             self.conf["bridgeIP"] = bridgeIP
-            self.writeConfig() # TODO: Ask if we want to write to configuration
+            self.writeConfig()
         return self.conf
 
     def getBridgeIP(self):
@@ -42,7 +39,7 @@ class ConfigHandler():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         s.settimeout(5)
-        s.sendto(msg.encode(), ('192.168.50.255', 1900)) # TODO: Make this find the broadcast address
+        s.sendto(msg.encode(), ('192.168.50.255', 1900))
         bridgeIP = None
         try:
             while True:

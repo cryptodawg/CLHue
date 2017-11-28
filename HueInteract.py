@@ -6,8 +6,8 @@ class HueInteract():
 
     def __init__(self):
         conf = ConfigHandler().load()
-        username = '8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0' # TODO: Programatically get this - will be done in ConfigHandler
-        self.api = HueAPI(conf['bridgeIP'], username) # TODO: Change this once we can programatically get the username
+        username = '8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0'
+        self.api = HueAPI(conf['bridgeIP'], username)
 
     def get(self, arg):
         """ Returns items from the bridge API in JSON format.
@@ -37,7 +37,6 @@ class HueInteract():
         else:
             return self.api.put(arg + ' state', newState)
 
-    # TODO: Error handling if we specify this for a bulb that can only handle white
     def rainbow(self, arg, bri=-1, sat=-1):
         """ Cycles an item through all hues. Returns the API response in JSON format.
 

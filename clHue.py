@@ -1,12 +1,12 @@
 from HueInteract import HueInteract
-from LightGroup import LightGroup
+from LightGroupManager import LightGroupManager
 import cmd
 from pprint import pprint
 
 class clHue(cmd.Cmd):
 	""" A command-line interface for interacting with a Philips Hue bridge. """
 
-	intro = 'Welcome to clHue!'
+	intro = 'Welcome to clHue!\n'
 
 	def __init__(self):
 		super(clHue, self).__init__()
@@ -71,7 +71,6 @@ class clHue(cmd.Cmd):
 			newState[stateParam] = stateValue
 		pprint(self.api.putState(arg, newState))
 
-	# TODO: Add arguments for brightness and saturation to this
 	def do_rainbow(self, arg):
 		"""	Cycles the object (arg) through all hues. Doesn't return anything.
 
@@ -82,13 +81,12 @@ class clHue(cmd.Cmd):
 
 	def do_test(self, arg):
 		""" Lets us test commands in HueInteract """
-		group = LightGroup(self.api, 'all', 'Test1')
-		group.remove(2)
-		print(group)
-		group.add(2)
-		print(group)
-		group.remove('blah')
-		group.add('blah')
+		groupManager = LightGroupManager(self.api)
+		allLights = groupManager['All Lights']
+		livingRoom = groupManager.add([3, 5])
+		pprint(livingRoom.rainbow())
+		groupManager.add([2, 4])
+		print(groupManager)
 
 if __name__ == '__main__':
 	clHue().cmdloop()
