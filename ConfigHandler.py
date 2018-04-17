@@ -16,19 +16,22 @@ class ConfigHandler():
             with open('clConfig.conf', 'r') as confFile:
                 parsedConf = json.load(confFile)
         except (FileNotFoundError, json.decoder.JSONDecodeError) as e:
-            raise e("No configuration file found or it's empty")
+            open('clConfig.conf', 'a').close()
+            parsedConf = dict()
 
         # See if name exists
         try:
             self.conf = parsedConf[name]
         except KeyError:
-            # TODO: Write the name to the file
+            self.conf[name] = dict()
+        self.name = name       
 
         # See if there is a bridge IP listed
         try:
             bridgeIP = self.conf[name]["bridgeIP"]
-        except (KeyError):
-            raise KeyError("No bridge found.")
+        except KeyError:
+            self.setIP()
+
         return self.conf
 
     def findBridgeIP(self):
@@ -54,17 +57,24 @@ class ConfigHandler():
             pass
         s.close()
         if bridgeIP is None:
-            raise ValueError("No bridge found.")
+            raise ValueError("No bridge found")
 
     def setIP(self, ipAddress = None):
         if ipAddress is None:
             ipAddress = self.findBridgeIP()
-        self.conf[name]["bridgeIP"] = ipAddress
-        self.writeConfig()
+        self.conf[self.name]["bridgeIP"] = ipAddress
 
-    def writeConfig(self):
+    def writeConfig(self, name = None, newConf = None):
         """ Writes the currently loaded configuration to the configuration file. Doesn't return anything. """
         with open('clConfig.conf', 'w') as confFile:
-            json.dump(self.conf, confFile)
-            confFile.flush()
-            print('Written to configuration file.')
+                parsedConf = json.load(confFile)
+                if name is None:
+                    name = self.name
+                if newConf is None:
+                    parsedConf[name] = self.conf
+                    print(parsedConf)
+                else:
+                    parsedConf[name] = newConf
+                json.dump(parsedConf, confFile)
+                confFile.flush()
+                print('Written to configuration file')

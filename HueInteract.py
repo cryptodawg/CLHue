@@ -1,17 +1,11 @@
 from HueAPI import HueAPI
-from ConfigHandler import ConfigHandler
 
 class HueInteract():
     """ A Python API to interact with the Philips Hue bridge API in a user-friendly way. """
 
-    def __init__(self):
-        confHandler = ConfigHandler()
-        try:
-            conf = confHandler.load()
-        except KeyError("Name doesn't exist."):
-            conf =
+    def __init__(self, bridgeIP):
         username = '8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0'
-        self.api = HueAPI(conf['bridgeIP'], username)
+        self.api = HueAPI(bridgeIP, username)
 
     def get(self, arg):
         """ Returns items from the bridge API in JSON format.

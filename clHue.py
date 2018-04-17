@@ -1,4 +1,5 @@
 from HueInteract import HueInteract
+from ConfigHandler import ConfigHandler
 from LightGroupManager import LightGroupManager
 from pprint import pprint
 import cmd
@@ -12,11 +13,35 @@ class clHue(cmd.Cmd):
 
 	def __init__(self):
 		super(clHue, self).__init__()
+		name = 'CryptoHue'
+		self.confHandler = ConfigHandler()
+		conf = self.confHandler.load(name)
+		bridgeIP = conf[name]['bridgeIP']
+		print('Connecting to bridge at ' + bridgeIP)
 		try:
-			self.api = HueInteract()
-		except ValueError:
-			ipAddress = raw_input("Bridge not found. Input the address manually: ")
-			self.api = HueInteract()
+			self.api = HueInteract(bridgeIP)
+		except ValueError as e:
+			if str(e) == "IP not found on network":
+				print("Currently loaded IP address (" + bridgeIP + ") not found on the network")
+				confirm = input("Would you like to search for a new bridge (y/n)? ")
+				if confirm == 'y':
+					try:
+						self.confHandler.setIP()
+						bridgeIP = conf[name]['bridgeIP']
+						print('Bridge found at ' + bridgeIP)
+					except ValueError as e:
+						if str(e) == 'No bridge found':
+							print('No bridge found.')
+							bridgeIP = input("Input the address manually: ")
+							self.configHandler.setIP(bridgeIP)
+						else:
+							raise e
+					self.confHandler.writeConfig()
+					self.api = HueInteract(bridgeIP)
+				else:
+					exit()
+			else:
+				raise e
 		self.prompt = self.api.bridgeName() + '> '
 		self.parser = argparse.ArgumentParser()
 		self.subparsers = self.parser.add_subparsers()
