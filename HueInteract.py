@@ -5,7 +5,11 @@ class HueInteract():
     """ A Python API to interact with the Philips Hue bridge API in a user-friendly way. """
 
     def __init__(self):
-        conf = ConfigHandler().load()
+        confHandler = ConfigHandler()
+        try:
+            conf = confHandler.load()
+        except KeyError("Name doesn't exist."):
+            conf =
         username = '8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0'
         self.api = HueAPI(conf['bridgeIP'], username)
 
@@ -75,5 +79,12 @@ class HueInteract():
         Parameters:
 			arg -- a string in the form of <lights/groups> <id>
         """
-        currState = status(arg)
+        currState = self.status(arg)
         return self.power(arg, not currState)
+
+    def phoneHome(self, arg):
+        """ Toggles the Philips Hue "phone home" functionality in which it sends out a bunch of requests to "www.ecdinterface.philips.com".
+        The Hue won't receive updates if disabled, but it will stop the enormous amount of connections - over 48 hours, it can be contacted over 18k
+        times.
+        """
+        pass

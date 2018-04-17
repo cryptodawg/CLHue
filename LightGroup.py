@@ -39,13 +39,6 @@ class LightGroup:
 
         self.name = newName
 
-    def get(self):
-        """ Returns the API response of the status of all lights in the group """
-        response = []
-        for i in self.lightsStr:
-            response.append(self.api.get(i))
-        return response
-
     def addLight(self, newLight):
         """ Add a light to the group.
 
@@ -73,6 +66,25 @@ class LightGroup:
         except KeyError:
             print("Light " + toRemove + " doesn't exist in group " + self.name)
 
+    def basicModel(self, func, *kwargs):
+        """ The basic model of running commands over a group where we can simply repeat the same action for every light in the group. Returns the API response in JSON format.
+
+        Parameters:
+            func --- a function to run over every light in the groups
+            kwargs --- arguments to func
+        """
+        response = []
+        for i in self.lightsStr:
+            if kwargs == {}:
+                response.append(func(i))
+            else:
+                response.append(func(i, *kwargs))
+        return response
+
+    def get(self):
+        """ Returns the API response of the status of all lights in the group """
+        return self.basicModel(self.api.get)
+
     def rainbow(self, bri = -1, sat = -1):
         """ Cycles all lights in the group through all hues.
 
@@ -80,7 +92,20 @@ class LightGroup:
             bri -- optional, specifies brightness from 1 (dim) to 254 (most bright)
             sat -- optional, specifies saturation from 0 (white) to 254 (most saturated)
         """
-        response = []
-        for i in self.lightsStr:
-            response.append(self.api.rainbow(i, bri, sat))
-        return response
+        return self.basicModel(self.api.rainbow)
+
+    def power(self, on):
+        """ Powers all lights in the group on or off. Returns the API response in JSON format.
+
+        Parameters:
+            on -- a boolean, True if we want to turn the object on and False if we want to turn it off
+        """
+        return self.basicModel(self.api.power, on)
+
+    def toggle(self):
+        """ Toggles the power of an the group off to on and vice-versa. Returns the API response in JSON format.
+
+        Parameters:
+			arg -- a string in the form of <lights/groups> <id>
+        """
+        return self.basicModel(self.api.toggle)

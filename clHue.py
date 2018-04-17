@@ -1,7 +1,9 @@
 from HueInteract import HueInteract
 from LightGroupManager import LightGroupManager
-import cmd
 from pprint import pprint
+import cmd
+import argparse
+
 
 class clHue(cmd.Cmd):
 	""" A command-line interface for interacting with a Philips Hue bridge. """
@@ -10,8 +12,14 @@ class clHue(cmd.Cmd):
 
 	def __init__(self):
 		super(clHue, self).__init__()
-		self.api = HueInteract()
+		try:
+			self.api = HueInteract()
+		except ValueError:
+			ipAddress = raw_input("Bridge not found. Input the address manually: ")
+			self.api = HueInteract()
 		self.prompt = self.api.bridgeName() + '> '
+		self.parser = argparse.ArgumentParser()
+		self.subparsers = self.parser.add_subparsers()
 
 	def do_exit(self, arg):
 		""" Exit the program. """
@@ -77,6 +85,7 @@ class clHue(cmd.Cmd):
 		Parameters:
 			arg -- a string in the form of <lights/groups> <id>
 		"""
+		argParser = self.subparsers.add_parser('rainbow', help = 'help rainbow')
 		pprint(self.api.rainbow(arg))
 
 	def do_test(self, arg):
@@ -84,9 +93,7 @@ class clHue(cmd.Cmd):
 		groupManager = LightGroupManager(self.api)
 		allLights = groupManager['All Lights']
 		livingRoom = groupManager.add([3, 5])
-		pprint(livingRoom.rainbow())
-		groupManager.add([2, 4])
-		print(groupManager)
+		pprint(livingRoom.toggle())
 
 if __name__ == '__main__':
 	clHue().cmdloop()

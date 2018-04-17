@@ -1,34 +1,37 @@
 import json
 import socket
 
+# TODO: Remove print statements
+
 class ConfigHandler():
     """ Handler for clHue configuration. """
 
     def __init__(self):
         self.conf = dict()
 
-    def load(self):
+    def load(self, name = "default"):
         """ Load the configuration file (clConfig.conf) and returns the loaded configuration in a dictionary. """
         # Attempt to load the file
         try:
-            print("Loading configuration file.")
             with open('clConfig.conf', 'r') as confFile:
-                self.conf = json.load(confFile)
-        except (FileNotFoundError, json.decoder.JSONDecodeError):
-            print("Configuration file missing or empty.")
+                parsedConf = json.load(confFile)
+        except (FileNotFoundError, json.decoder.JSONDecodeError) as e:
+            raise e("No configuration file found or it's empty")
+
+        # See if name exists
+        try:
+            self.conf = parsedConf[name]
+        except KeyError:
+            # TODO: Write the name to the file
 
         # See if there is a bridge IP listed
         try:
-            bridgeIP = self.conf["bridgeIP"]
-            print("Found bridge in configuration file: ", bridgeIP)
+            bridgeIP = self.conf[name]["bridgeIP"]
         except (KeyError):
-            print("No bridge IP found in configuration file. Searching the network...")
-            bridgeIP = self.getBridgeIP()
-            self.conf["bridgeIP"] = bridgeIP
-            self.writeConfig()
+            raise KeyError("No bridge found.")
         return self.conf
 
-    def getBridgeIP(self):
+    def findBridgeIP(self):
         """ Returns the IP address of a Philips Hue bridge on the network """
         msg = \
             'M-SEARCH * HTTP/1.1\r\n' \
@@ -46,14 +49,18 @@ class ConfigHandler():
                 data, addr = s.recvfrom(65507)
                 if 'IpBridge'.encode() in data: # TODO: Make this work if there are multiple bridges on the network
                     bridgeIP = addr[0]
-                    print('Bridge found at', bridgeIP)
                     return bridgeIP
         except socket.timeout:
             pass
         s.close()
         if bridgeIP is None:
-            print("No bridge found. Exiting.")
-            exit()
+            raise ValueError("No bridge found.")
+
+    def setIP(self, ipAddress = None):
+        if ipAddress is None:
+            ipAddress = self.findBridgeIP()
+        self.conf[name]["bridgeIP"] = ipAddress
+        self.writeConfig()
 
     def writeConfig(self):
         """ Writes the currently loaded configuration to the configuration file. Doesn't return anything. """
