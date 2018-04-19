@@ -3,7 +3,6 @@ from ConfigHandler import ConfigHandler
 from LightGroupManager import LightGroupManager
 from pprint import pprint
 import cmd
-import argparse
 
 
 class clHue(cmd.Cmd):
@@ -16,7 +15,7 @@ class clHue(cmd.Cmd):
 		name = 'CryptoHue'
 		self.confHandler = ConfigHandler()
 		conf = self.confHandler.load(name)
-		bridgeIP = conf[name]['bridgeIP']
+		bridgeIP = conf['bridgeIP']
 		print('Connecting to bridge at ' + bridgeIP)
 		try:
 			self.api = HueInteract(bridgeIP)
@@ -43,8 +42,7 @@ class clHue(cmd.Cmd):
 			else:
 				raise e
 		self.prompt = self.api.bridgeName() + '> '
-		self.parser = argparse.ArgumentParser()
-		self.subparsers = self.parser.add_subparsers()
+		self.groupManager = LightGroupManager(self.api)
 
 	def do_exit(self, arg):
 		""" Exit the program. """
@@ -115,10 +113,17 @@ class clHue(cmd.Cmd):
 
 	def do_test(self, arg):
 		""" Lets us test commands in HueInteract """
-		groupManager = LightGroupManager(self.api)
-		allLights = groupManager['All Lights']
-		livingRoom = groupManager.add([3, 5])
+		allLights = self.groupManager['All Lights']
+		livingRoom = self.groupManager.add([3, 5])
 		pprint(livingRoom.toggle())
+
+	def do_save(self, arg):
+		print("Currently loaded configuration (" + self.confHandler.name + ")")
+		print(self.confHandler.conf)
+		confirm = input("Save currently loaded configuration (y/n)? ")
+		if confirm == 'y':
+			self.confHandler.writeConfig()
+			print("Saved configuration to clConfig.conf")
 
 if __name__ == '__main__':
 	clHue().cmdloop()

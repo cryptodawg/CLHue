@@ -13,7 +13,6 @@ class HueAPI():
 
     def __init__(self, hueURL, username):
         self.url = 'http://' + hueURL + '/api/' + username
-        print("ping -n 1 " + hueURL + " > NUL")
         # response = os.system("ping -n 1 " + hueURL + " > NUL")
         # if response != '0':
         #     raise ValueError("IP not found on network")

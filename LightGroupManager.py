@@ -11,7 +11,7 @@ class LightGroupManager:
         self.noNames = 0
         self.groups = dict()
         self.api = api
-        self.add('all', name = 'All Lights')
+        self.add('all', name = 'all')
 
     def __str__(self):
         """ Returns a string representation of the LightGroupManager in the format of 'Group name': [lights in the group] """
@@ -58,3 +58,10 @@ class LightGroupManager:
             self.groups.pop(name, None)
         except KeyError:
             print("Group does not exist.")
+
+    def status(self, key):
+        lights = self.groups[key]
+        results = []
+        for i in lights:
+            results.append(self.api.get('lights ' + str(i)))
+        return results

@@ -23,6 +23,9 @@ class LightGroup:
         """ Returns a string representation of the LightGroup """
         return str(self.name) + ": " + str(self.lights)
 
+    def __iter__(self):
+        return self.lights.__iter__()
+
     def status(self):
         """ Returns True if all lights in the group are on, False otherwise """
         for i in self.lightsStr:
