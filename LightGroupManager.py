@@ -61,7 +61,9 @@ class LightGroupManager:
 
     def status(self, key):
         lights = self.groups[key]
-        results = []
+        results = dict()
         for i in lights:
-            results.append(self.api.get('lights ' + str(i)))
+            lightStatus = self.api.get('lights ' + str(i))
+            lightName = lightStatus['name']
+            results[lightName] = lightStatus
         return results

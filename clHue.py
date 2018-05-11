@@ -113,9 +113,9 @@ class clHue(cmd.Cmd):
 
 	def do_test(self, arg):
 		""" Lets us test commands in HueInteract """
-		allLights = self.groupManager['All Lights']
+		allLights = self.groupManager['all']
 		livingRoom = self.groupManager.add([3, 5])
-		pprint(livingRoom.toggle())
+		pprint(allLights.toggle())
 
 	def do_save(self, arg):
 		print("Currently loaded configuration (" + self.confHandler.name + ")")
