@@ -29,7 +29,11 @@ class Points:
 		fieldSet = dict()
 		for i in fields:
 			if not isinstance(fields[i], dict): # Base case
-				fieldSet[fieldPrefix + i] = str(fields[i])
+				if isinstance(fields[i], bool):
+					fields[i] = 1 if fields[i] else 0
+					fieldSet[fieldPrefix + i] = fields[i]
+				else:
+					fieldSet[fieldPrefix + i] = str(fields[i])
 			else: # Recursive case
 				fieldPrefix = fieldPrefix + str(i) + "_"
 				fieldSet.update(self.getFields(fields[i], fieldPrefix))
