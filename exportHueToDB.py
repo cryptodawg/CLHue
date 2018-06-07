@@ -32,6 +32,8 @@ class Points:
 				if isinstance(fields[i], bool):
 					fields[i] = 1 if fields[i] else 0
 					fieldSet[fieldPrefix + i] = fields[i]
+				elif isinstance(fields[i], int):
+					fieldSet[fieldPrefix + i] = fields[i]
 				else:
 					fieldSet[fieldPrefix + i] = str(fields[i])
 			else: # Recursive case
