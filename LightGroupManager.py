@@ -1,4 +1,4 @@
-from LightGroup import LightGroup
+from CLHue import LightGroup
 
 class LightGroupManager:
     """ A manager for a collection of LightGroup objects.
@@ -46,7 +46,7 @@ class LightGroupManager:
         if name is None:
             name = str(self.noNames)
             self.noNames += 1
-        newGroup = LightGroup(self.api, lights, name)
+        newGroup = LightGroup.LightGroup(self.api, lights, name)
         self.groups[name] = newGroup
         return newGroup
 

@@ -1,4 +1,4 @@
-from HueInteract import HueInteract
+from CLHue import HueInteract
 
 class LightGroup:
     """ Enables a user to define app-specific groups of lights instead of storing them all on the bridge

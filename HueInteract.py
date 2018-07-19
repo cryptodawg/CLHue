@@ -1,11 +1,11 @@
-from HueAPI import HueAPI
+from CLHue import HueAPI
 
 class HueInteract():
     """ A Python API to interact with the Philips Hue bridge API in a user-friendly way. """
 
     def __init__(self, bridgeIP):
         username = '8zBIONh42t4l1LbxOymAit7LYY9UHj338dW0jjc0'
-        self.api = HueAPI(bridgeIP, username)
+        self.api = HueAPI.HueAPI(bridgeIP, username)
 
     def get(self, arg):
         """ Returns items from the bridge API in JSON format.
